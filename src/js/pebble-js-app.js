@@ -181,10 +181,13 @@ function timeago(offset) {
 
 function options ( ) {
     var opts = [ ].slice.call(arguments).pop( );
+    console.log("opts line 184: " + opts);
     if (opts) {
         window.localStorage.setItem('cgmPebble', JSON.stringify(opts));
+        console.log("JSON.stringify(opts): " + JSON.stringify(opts));
     } else {
         opts = JSON.parse(window.localStorage.getItem('cgmPebble'));
+        console.log("opts line 190: " + opts);
     }
     return opts;
 }
