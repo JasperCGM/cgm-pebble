@@ -7,7 +7,7 @@ var lastAlert = [0,0];
 var started = new Date( ).getTime( );
 var counter = 1;
 var endpointnum = 2;
-var url = ["http://jasper4242.azurewebsites.net","http://Jasmine4242.azurewebsites.net"];
+var url = ["http://jasper4242.azurewebsites.net/pebble","http://Jasmine4242.azurewebsites.net/pebble"];
 var name = ["Jasper", "Jasmine"];
 var namenum = 0;
 
@@ -56,6 +56,7 @@ function fetchCgmData(lastReadTime, lastBG) {
     if(endpointnum > 1){
         counter++;
         namenum = counter % endpointnum;
+        console.log("namenum: " + namenum);
         req.open('GET', url[namenum], true);
         
     }else{
@@ -74,6 +75,8 @@ function fetchCgmData(lastReadTime, lastBG) {
                 var bgs = response.bgs;
                 if (bgs && bgs.length > 0) {
                     console.log('got bgs', JSON.stringify(bgs));
+                    console.log("name[]: " + name[]);
+                    console.log("name[namenum]: " + name[namenum)
                     
                     var now = new Date().getTime(),
                     sinceLastAlert = now - lastAlert[namenum],
@@ -84,6 +87,7 @@ function fetchCgmData(lastReadTime, lastBG) {
                     readingtime = new Date(bgs[0].datetime).getTime(),
                     readago = now - readingtime;
                     
+                    console.log("delta: " + delta);
                     console.log("now: " + now);
                     console.log("readingtime: " + readingtime);
                     console.log("readago: " + readago);
