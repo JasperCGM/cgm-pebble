@@ -4,11 +4,16 @@ TIME_15_MINS = 15 * 60 * 1000,
 TIME_30_MINS = TIME_15_MINS * 2;
 
 var lastAlert = [0,0];
+var LastLowAlert = [0,0];
+var LastLowFallingAlert = [0,0];
+var LastHighAlert = [0,0];
+var LastHighRiseAlert = [0,0];
+
 var started = new Date( ).getTime( );
 var counter = 1;
 var endpointnum = 2;
 var url = ["http://jasper4242.azurewebsites.net/pebble","http://Jasmine4242.azurewebsites.net/pebble"];
-var name = ["Jasper", "Jasmine"];
+var person = ["Jasper", "Jasmine"];
 var namenum = 0;
 
 var DIRECTIONS = {
@@ -75,15 +80,19 @@ function fetchCgmData(lastReadTime, lastBG) {
                 var bgs = response.bgs;
                 if (bgs && bgs.length > 0) {
                     console.log('got bgs', JSON.stringify(bgs));
-                    console.log("name[]: " + name);
-                    console.log("name[namenum]: " + name[namenum]);
-                    
+
                     var now = new Date().getTime(),
                     sinceLastAlert = now - lastAlert[namenum],
+                    sinceLastLowAlert = now - LastLowAlert[namenum],
+                    sinceLastLowFallingAlert = now - LastLowFallingAlert[namenum],
+                    sinceLastHighAlert = now - LastHighAlert[namenum],
+                    sinceLastHighRiseAlert = now - LastHighRiseAlert[namenum],
+                    hourNow = new Date().getHours(),
+                    debugging = "no alarm",
                     alertValue = 0,currentBG = bgs[0].sgv,
                     currentBGDelta = bgs[0].bgdelta,
                     currentDirection = bgs[0].direction,
-                    delta = (currentBGDelta > 0 ? '+' : '') + currentBGDelta + " mg/dL " + name[namenum],
+                    delta = (currentBGDelta > 0 ? '+' : '') + currentBGDelta + " mg/dL " + person[namenum],
                     readingtime = new Date(bgs[0].datetime).getTime(),
                     readago = now - readingtime;
                     
@@ -92,33 +101,36 @@ function fetchCgmData(lastReadTime, lastBG) {
                     console.log("readingtime: " + readingtime);
                     console.log("readago: " + readago);
                     
-                    if (currentBG < 39) {
-                        if (sinceLastAlert > TIME_10_MINS) alertValue = 2;
-                    } else if (currentBG < 55)
+                    if (currentBG < 60){
                         alertValue = 2;
-                    else if (currentBG < 60 && currentBGDelta < 0)
+                        debugging = "currentBG < 60";
+                    } else if(currentBG < 90 && sinceLastLowAlert > TIME_20_MINS){
                         alertValue = 2;
-                    else if (currentBG < 70 && sinceLastAlert > TIME_15_MINS)
+                        LastLowAlert[namenum] = now;
+                        debugging = "currentBG < 90";
+                    }else if(currentBG < 180 && currentDirection == 'DoubleDown' && sinceLastLowFallingAlert > TIME_10_MINS){
                         alertValue = 2;
-                    else if (currentBG < 120 && currentDirection == 'DoubleDown' && sinceLastAlert > TIME_5_MINS)
-                        alertValue = 2;
-                    else if (currentBG == 100 && currentDirection == 'Flat' && sinceLastAlert > TIME_15_MINS) //Perfect Score - a good time to take a picture :)
-                        alertValue = 1;
-                    else if (currentBG > 120 && currentDirection == 'DoubleUp' && sinceLastAlert > TIME_15_MINS)
+                        LastLowFallingAlert[namenum] = now;
+                        debugging = "currentBG < 180 and DoubleDown";
+                    }else if(currentBG > 180 && sinceLastHighAlert > TIME_90_MINS && hourNow > 8 && hourNow < 20){
                         alertValue = 3;
-                    else if (currentBG > 200 && sinceLastAlert > TIME_30_MINS && currentBGDelta > 0)
+                        LastHighAlert[namenum] = now;
+                        debugging = "currentBG > 180";
+                    }else if(currentBG > 260 && sinceLastHighAlert > TIME_90_MINS){
                         alertValue = 3;
-                    else if (currentBG > 250 && sinceLastAlert > TIME_30_MINS)
+                        LastHighAlert[namenum] = now;
+                        debugging = "currentBG > 260";
+                    }else if(currentBG > 300 && currentDirection == 'Doubleup' && sinceLastHighRiseAlert > TIME_30_MINS){
                         alertValue = 3;
-                    else if (currentBG > 300 && sinceLastAlert > TIME_15_MINS)
-                        alertValue = 3;
-                    
-                    if (alertValue === 0 && readago > TIME_10_MINS && sinceLastAlert > TIME_15_MINS) {
-                        alertValue = 1;
+                        LastHighRiseAlert[namenum] = now;
+                        debugging = "currentBG > 300";
                     }
                     
-                    if (alertValue > 0) {
+                                        
+                    if (alertValue === 0 && readago > TIME_10_MINS && sinceLastAlert > TIME_15_MINS) {
+                        alertValue = 1;
                         lastAlert[namenum] = now;
+                        debugging = "No data";
                     }
                     
                     message = {
