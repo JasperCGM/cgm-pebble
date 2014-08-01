@@ -198,7 +198,7 @@ static void send_cmd(void) {
 static void timer_callback(void *data) {
 
 	send_cmd();
-	timer = app_timer_register(60000, timer_callback, NULL);
+	timer = app_timer_register(30000, timer_callback, NULL);
 
 }
 
