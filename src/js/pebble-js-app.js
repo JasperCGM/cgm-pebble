@@ -75,8 +75,8 @@ function fetchCgmData(lastReadTime, lastBG) {
                 var bgs = response.bgs;
                 if (bgs && bgs.length > 0) {
                     console.log('got bgs', JSON.stringify(bgs));
-                    console.log("name[]: " + name[]);
-                    console.log("name[namenum]: " + name[namenum)
+                    console.log("name[]: " + name);
+                    console.log("name[namenum]: " + name[namenum]);
                     
                     var now = new Date().getTime(),
                     sinceLastAlert = now - lastAlert[namenum],
