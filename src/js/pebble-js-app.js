@@ -3,8 +3,13 @@ TIME_10_MINS = 10 * 60 * 1000,
 TIME_15_MINS = 15 * 60 * 1000,
 TIME_30_MINS = TIME_15_MINS * 2;
 
-var lastAlert = 0;
+var lastAlert = [0,0];
 var started = new Date( ).getTime( );
+var counter = 1;
+var endpointnum = 2;
+var url = ["http://jasper4242.azurewebsites.net","http://Jasmine4242.azurewebsites.net"];
+var name = ["Jasper", "Jasmine"];
+var namenum = 0;
 
 var DIRECTIONS = {
     'NONE': 0,
@@ -48,7 +53,14 @@ function fetchCgmData(lastReadTime, lastBG) {
     var req = new XMLHttpRequest();
     
     console.log('options', opts, opts.endpoint);
-    req.open('GET', opts.endpoint, true);
+    if(endpointnum > 1){
+        counter++;
+        namenum = counter % endpointnum;
+        req.open('GET', url[namenum], true);
+        
+    }else{
+        req.open('GET', opts.endpoint, true);
+    }
     
     req.onload = function(e) {
         
@@ -64,11 +76,11 @@ function fetchCgmData(lastReadTime, lastBG) {
                     console.log('got bgs', JSON.stringify(bgs));
                     
                     var now = new Date().getTime(),
-                    sinceLastAlert = now - lastAlert,
+                    sinceLastAlert = now - lastAlert[namenum],
                     alertValue = 0,currentBG = bgs[0].sgv,
                     currentBGDelta = bgs[0].bgdelta,
                     currentDirection = bgs[0].direction,
-                    delta = (currentBGDelta > 0 ? '+' : '') + currentBGDelta + " mg/dL",
+                    delta = (currentBGDelta > 0 ? '+' : '') + currentBGDelta + " mg/dL " + name[namenum],
                     readingtime = new Date(bgs[0].datetime).getTime(),
                     readago = now - readingtime;
                     
@@ -102,7 +114,7 @@ function fetchCgmData(lastReadTime, lastBG) {
                     }
                     
                     if (alertValue > 0) {
-                        lastAlert = now;
+                        lastAlert[namenum] = now;
                     }
                     
                     message = {
